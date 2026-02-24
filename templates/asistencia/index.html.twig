@@ -243,6 +243,60 @@
     </div>
   </div>
 
+  <!-- Export Modal -->
+  <div class="modal fade" id="exportModal" tabindex="-1" aria-labelledby="exportModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="exportModalLabel">
+            <i class="fas fa-download me-2"></i>Exportar a Excel
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form id="exportForm">
+            <div class="mb-3">
+              <label for="exportDateFrom" class="form-label fw-bold">Fecha Desde</label>
+              <div class="input-group">
+                <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
+                <input type="date" class="form-control" id="exportDateFrom">
+              </div>
+            </div>
+            <div class="mb-3">
+              <label for="exportDateTo" class="form-label fw-bold">Fecha Hasta</label>
+              <div class="input-group">
+                <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
+                <input type="date" class="form-control" id="exportDateTo">
+              </div>
+            </div>
+            <div class="mb-3">
+              <label for="exportLegajoType" class="form-label fw-bold">Tipo de Legajo</label>
+              <select class="form-select" id="exportLegajoType">
+                <option value="all">Todos los legajos</option>
+                <option value="specific">Legajo específico</option>
+              </select>
+            </div>
+            <div class="mb-3" id="specificLegajoGroup" style="display: none;">
+              <label for="exportLegajo" class="form-label fw-bold">Legajo Específico</label>
+              <div class="input-group">
+                <span class="input-group-text"><i class="fas fa-hashtag"></i></span>
+                <input type="text" class="form-control" id="exportLegajo" placeholder="Ingrese número de legajo">
+              </div>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+            <i class="fas fa-times me-2"></i>Cancelar
+          </button>
+          <button type="button" class="btn btn-info" id="btnConfirmExport">
+            <i class="fas fa-download me-2"></i>Exportar
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div class="card table-card">
     <div class="card-header bg-gradient text-white" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
       <div class="row align-items-center">
@@ -539,8 +593,33 @@
     setEditing(tr, true);
   });
 
+  // Modal functionality
+  const exportModal = new bootstrap.Modal(document.getElementById('exportModal'));
+  
   document.getElementById('btnExportar').addEventListener('click', () => {
-    const params = buildParams();
+    // Pre-fill dates from current search
+    document.getElementById('exportDateFrom').value = document.getElementById('authDateFrom').value;
+    document.getElementById('exportDateTo').value = document.getElementById('authDateTo').value;
+    exportModal.show();
+  });
+
+  document.getElementById('exportLegajoType').addEventListener('change', (e) => {
+    const specificGroup = document.getElementById('specificLegajoGroup');
+    specificGroup.style.display = e.target.value === 'specific' ? 'block' : 'none';
+  });
+
+  document.getElementById('btnConfirmExport').addEventListener('click', () => {
+    const dateFrom = document.getElementById('exportDateFrom').value;
+    const dateTo = document.getElementById('exportDateTo').value;
+    const legajoType = document.getElementById('exportLegajoType').value;
+    const legajo = document.getElementById('exportLegajo').value;
+    
+    // Build export parameters
+    const params = new URLSearchParams();
+    if (dateFrom) params.append('authDateFrom', dateFrom);
+    if (dateTo) params.append('authDateTo', dateTo);
+    if (legajoType === 'specific' && legajo) params.append('id', legajo);
+    
     const url = '/asistencia/export?' + params.toString();
     
     // Create a temporary link to download the file
@@ -550,6 +629,8 @@
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    
+    exportModal.hide();
   });
 
   document.getElementById('btnBuscar').addEventListener('click', () => { page = 1; load(); });

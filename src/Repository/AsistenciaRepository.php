@@ -195,32 +195,25 @@ class AsistenciaRepository
         // Calculate entry, exit, and average times
         $exportData = [];
         foreach ($grouped as $group) {
-            $entrada = !empty($group['entradas']) ? min($group['entradas']) : '';
-            $salida = !empty($group['salidas']) ? max($group['salidas']) : '';
+            $entradas = $group['entradas'];
+            $salidas = $group['salidas'];
             
-            // Calculate average time (difference between first entry and last exit)
-            $promedio = '';
-            if ($entrada && $salida) {
-                $entradaTime = strtotime($entrada);
-                $salidaTime = strtotime($salida);
-                if ($salidaTime > $entradaTime) {
-                    $diff = $salidaTime - $entradaTime;
-                    $hours = floor($diff / 3600);
-                    $minutes = floor(($diff % 3600) / 60);
-                    $promedio = sprintf("%02d:%02d", $hours, $minutes);
-                }
-            }
+            // Get first entry time (solo hay entradas IN)
+            $primeraEntrada = !empty($entradas) ? min($entradas) : '';
+            
+            // Como todos son IN, no hay salidas OUT para calcular promedio
+            $ultimaSalida = ''; // No hay salidas
+            $promedio = ''; // No se puede calcular sin OUT
             
             // Clean time format (remove microseconds)
-            $entrada = $entrada ? substr($entrada, 0, 8) : '';
-            $salida = $salida ? substr($salida, 0, 8) : '';
+            $primeraEntrada = $primeraEntrada ? substr($primeraEntrada, 0, 8) : '';
             
             $exportData[] = [
                 'id' => $group['id'],
                 'PersonName' => $group['PersonName'],
                 'authDate' => $group['authDate'],
-                'entrada' => $entrada,
-                'salida' => $salida,
+                'entrada' => $primeraEntrada,
+                'salida' => $ultimaSalida,
                 'promedio_tiempo' => $promedio
             ];
         }

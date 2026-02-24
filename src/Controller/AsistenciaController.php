@@ -43,8 +43,9 @@ class AsistenciaController extends AbstractController
         $csv = "REPORTE DE ASISTENCIA\n";
         $csv .= "Desde: " . ($filters['authDateFrom'] ?? 'Todas las fechas') . "\n";
         $csv .= "Hasta: " . ($filters['authDateTo'] ?? 'Todas las fechas') . "\n";
-        $csv .= "Generado: " . date('d/m/Y H:i:s') . "\n\n";
-        $csv .= "Legajo,Nombre y Apellido,Fecha,Entrada,Salida,Promedio Tiempo\n";
+        $csv .= "Generado: " . date('d/m/Y H:i:s') . "\n";
+        $csv .= "Nota: Solo se registran horas de entrada (IN)\n\n";
+        $csv .= "Legajo,Nombre y Apellido,Fecha,Hora Entrada,Hora Salida,Promedio Tiempo\n";
         
         foreach ($data as $row) {
             $csv .= sprintf(
