@@ -1,0 +1,569 @@
+{% extends 'base.html.twig' %}
+{% block title %}Asistencia{% endblock %}
+
+{% block stylesheets %}
+<style>
+  .asistencia-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 2rem 0;
+    margin-bottom: 2rem;
+    border-radius: 15px;
+  }
+  .search-card {
+    border: none;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    border-radius: 15px;
+    transition: transform 0.3s ease;
+  }
+  .search-card:hover {
+    transform: translateY(-2px);
+  }
+  .search-card .card-body {
+    padding: 2rem;
+  }
+  .table-card {
+    border: none;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    border-radius: 15px;
+    overflow: hidden;
+  }
+  .table-card .card-body {
+    padding: 0;
+  }
+  .table th {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-bottom: 2px solid #dee2e6;
+    font-weight: 600;
+    color: #495057;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    letter-spacing: 0.5px;
+  }
+  .table td {
+    vertical-align: middle;
+    border-bottom: 1px solid #f1f3f4;
+  }
+  .table tbody tr:hover {
+    background-color: #f8f9fa;
+    transition: background-color 0.2s ease;
+  }
+  .btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    border-radius: 8px;
+    padding: 0.5rem 1.5rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+  }
+  .btn-primary:hover {
+    background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+  }
+  .btn-success {
+    background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+    border: none;
+    border-radius: 8px;
+    padding: 0.5rem 1.5rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+  }
+  .btn-success:hover {
+    background: linear-gradient(135deg, #0f8b7e 0%, #2dd66a 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 5px 15px rgba(17, 153, 142, 0.3);
+  }
+  .btn-info {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    border: none;
+    border-radius: 8px;
+    padding: 0.5rem 1.5rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+  }
+  .btn-info:hover {
+    background: linear-gradient(135deg, #3d8bfe 0%, #00d9fe 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 5px 15px rgba(79, 172, 254, 0.3);
+  }
+  .btn-outline-secondary {
+    border-radius: 8px;
+    padding: 0.5rem 1.5rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+  }
+  .btn-outline-secondary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 5px 15px rgba(108, 117, 125, 0.2);
+  }
+  .form-control {
+    border-radius: 8px;
+    border: 1px solid #e0e0e0;
+    transition: all 0.3s ease;
+  }
+  .form-control:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+  }
+  .direction-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+  }
+  .direction-IN {
+    background-color: #d4edda;
+    color: #155724;
+  }
+  .direction-OUT {
+    background-color: #f8d7da;
+    color: #721c24;
+  }
+  .stats-info {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 10px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    border-left: 4px solid #667eea;
+  }
+  .pagination-info {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 0.75rem;
+    font-size: 0.9rem;
+    color: #6c757d;
+  }
+  .btn-sm {
+    border-radius: 6px;
+    font-weight: 500;
+  }
+  .btn-sm:hover {
+    transform: translateY(-1px);
+  }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="container py-4">
+  <div class="asistencia-header text-center mb-4">
+    <div class="container">
+      <h1 class="mb-2">
+        <i class="fas fa-fingerprint me-3"></i>Sistema de Asistencia
+      </h1>
+      <p class="mb-0 opacity-75">Gestión de registros biométricos de acceso</p>
+    </div>
+  </div>
+
+  <input type="hidden" id="csrfToken" value="{{ csrf_token('asistencia') }}">
+
+  <div class="card search-card mb-4">
+    <div class="card-body">
+      <h5 class="card-title mb-4">
+        <i class="fas fa-search me-2"></i>Búsqueda y Filtros
+      </h5>
+      <div class="row g-3">
+        <div class="col-md-3">
+          <label class="form-label fw-bold text-muted">ID</label>
+          <div class="input-group">
+            <span class="input-group-text"><i class="fas fa-hashtag"></i></span>
+            <input class="form-control" id="id" placeholder="Buscar por ID...">
+          </div>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label fw-bold text-muted">Dirección</label>
+          <select class="form-select" id="direction">
+            <option value="">Todas</option>
+            <option value="IN">Entrada</option>
+            <option value="OUT">Salida</option>
+          </select>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label fw-bold text-muted">Dispositivo</label>
+          <div class="input-group">
+            <span class="input-group-text"><i class="fas fa-desktop"></i></span>
+            <input class="form-control" id="deviceName" placeholder="Nombre dispositivo">
+          </div>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label fw-bold text-muted">Serie Dispositivo</label>
+          <div class="input-group">
+            <span class="input-group-text"><i class="fas fa-barcode"></i></span>
+            <input class="form-control" id="deviceSerial" placeholder="Número de serie">
+          </div>
+        </div>
+
+        <div class="col-md-4">
+          <label class="form-label fw-bold text-muted">Persona</label>
+          <div class="input-group">
+            <span class="input-group-text"><i class="fas fa-user"></i></span>
+            <input class="form-control" id="PersonName" placeholder="Nombre completo">
+          </div>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label fw-bold text-muted">Tarjeta</label>
+          <div class="input-group">
+            <span class="input-group-text"><i class="fas fa-credit-card"></i></span>
+            <input class="form-control" id="cardN" placeholder="Número de tarjeta">
+          </div>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label fw-bold text-muted">Fecha Desde</label>
+          <div class="input-group">
+            <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
+            <input type="date" class="form-control" id="authDateFrom">
+          </div>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label fw-bold text-muted">Fecha Hasta</label>
+          <div class="input-group">
+            <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
+            <input type="date" class="form-control" id="authDateTo">
+          </div>
+        </div>
+
+        <div class="col-12">
+          <div class="d-flex gap-2 mt-3">
+            <button class="btn btn-success" id="btnAgregar">
+              <i class="fas fa-plus me-2"></i>Agregar
+            </button>
+            <button class="btn btn-primary" id="btnBuscar">
+              <i class="fas fa-search me-2"></i>Buscar
+            </button>
+            <button class="btn btn-outline-secondary" id="btnLimpiar">
+              <i class="fas fa-eraser me-2"></i>Limpiar
+            </button>
+            <button class="btn btn-info" id="btnExportar">
+              <i class="fas fa-download me-2"></i>Exportar Excel
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card table-card">
+    <div class="card-header bg-gradient text-white" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+      <div class="row align-items-center">
+        <div class="col-md-6">
+          <h5 class="mb-0">
+            <i class="fas fa-table me-2"></i>Registros de Asistencia
+          </h5>
+        </div>
+        <div class="col-md-6 text-md-end">
+          <div class="pagination-info d-inline-block">
+            <i class="fas fa-info-circle me-1"></i>
+            <span id="info">Cargando...</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0" id="tabla">
+          <thead class="table-light">
+            <tr>
+              <th class="text-center" style="width: 80px;">ID</th>
+              <th style="width: 180px;">Fecha/Hora</th>
+              <th style="width: 120px;">Fecha</th>
+              <th style="width: 80px;">Hora</th>
+              <th class="text-center" style="width: 80px;">Dirección</th>
+              <th>Dispositivo</th>
+              <th>Serie</th>
+              <th>Persona</th>
+              <th>Tarjeta</th>
+              <th class="text-center" style="width: 200px;">Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="tbody"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="card-footer bg-light">
+      <div class="d-flex justify-content-between align-items-center">
+        <div class="pagination-info">
+          <i class="fas fa-list me-1"></i>
+          <span id="recordCount">Mostrando registros</span>
+        </div>
+        <div class="d-flex gap-2">
+          <button class="btn btn-outline-secondary btn-sm" id="prev">
+            <i class="fas fa-chevron-left me-1"></i>Anterior
+          </button>
+          <button class="btn btn-outline-secondary btn-sm" id="next">
+            Siguiente<i class="fas fa-chevron-right ms-1"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(() => {
+  const csrf = document.getElementById('csrfToken').value;
+  let page = 1;
+  const pageSize = 50;
+
+  const qs = (id) => document.getElementById(id).value.trim();
+
+  function buildParams() {
+    const params = new URLSearchParams({
+      page: String(page),
+      pageSize: String(pageSize),
+      orderBy: 'authDateTime',
+      orderDir: 'desc',
+      id: qs('id') || '',
+      direction: qs('direction') || '',
+      deviceName: qs('deviceName') || '',
+      deviceSerial: qs('deviceSerial') || '',
+      PersonName: qs('PersonName') || '',
+      cardN: qs('cardN') || '',
+      authDateFrom: qs('authDateFrom') || '',
+      authDateTo: qs('authDateTo') || ''
+    });
+
+    [...params.keys()].forEach(k => { if (!params.get(k)) params.delete(k); });
+    return params;
+  }
+
+  async function load() {
+    const res = await fetch('/asistencia/list?' + buildParams().toString());
+    const json = await res.json();
+
+    const tbody = document.getElementById('tbody');
+    tbody.innerHTML = '';
+
+    json.data.forEach(r => {
+      const tr = document.createElement('tr');
+      tr.dataset.rowKey = r.rowKey;
+
+      const cols = [
+        ['id', r.id],
+        ['authDateTime', r.authDateTime ?? ''],
+        ['authDate', r.authDate ?? ''],
+        ['authTime', r.authTime ?? ''],
+        ['direction', r.direction],
+        ['deviceName', r.deviceName ?? ''],
+        ['deviceSerial', r.deviceSerial ?? ''],
+        ['PersonName', r.PersonName ?? ''],
+        ['cardN', r.cardN ?? ''],
+      ];
+
+      cols.forEach(([k,v]) => {
+        const td = document.createElement('td');
+        td.dataset.field = k;
+        
+        if (k === 'direction') {
+          const badge = document.createElement('span');
+          badge.className = `direction-badge direction-${v}`;
+          badge.textContent = v === 'IN' ? 'Entrada' : 'Salida';
+          td.appendChild(badge);
+        } else {
+          td.textContent = v;
+        }
+        
+        tr.appendChild(td);
+      });
+
+      const tdAcc = document.createElement('td');
+      tdAcc.innerHTML = `
+        <button class="btn btn-sm btn-outline-primary me-1" data-act="edit" title="Editar">
+          <i class="fas fa-edit"></i>
+        </button>
+        <button class="btn btn-sm btn-success me-1 d-none" data-act="save" title="Guardar">
+          <i class="fas fa-check"></i>
+        </button>
+        <button class="btn btn-sm btn-outline-secondary me-1 d-none" data-act="cancel" title="Cancelar">
+          <i class="fas fa-times"></i>
+        </button>
+        <button class="btn btn-sm btn-outline-danger" data-act="del" title="Eliminar">
+          <i class="fas fa-trash"></i>
+        </button>
+      `;
+      tr.appendChild(tdAcc);
+
+      tbody.appendChild(tr);
+    });
+
+    document.getElementById('info').textContent =
+      `Página ${json.page} · ${json.data.length} registros`;
+    document.getElementById('recordCount').textContent =
+      `Mostrando ${json.data.length} registros` + (json.data.length > 0 ? ` de la página ${json.page}` : '');
+  }
+
+  function setEditing(tr, editing) {
+    const btnEdit = tr.querySelector('[data-act="edit"]');
+    const btnSave = tr.querySelector('[data-act="save"]');
+    const btnCancel = tr.querySelector('[data-act="cancel"]');
+
+    btnEdit.classList.toggle('d-none', editing);
+    btnSave.classList.toggle('d-none', !editing);
+    btnCancel.classList.toggle('d-none', !editing);
+
+    if (editing) {
+      tr._original = {};
+      tr.querySelectorAll('td[data-field]').forEach(td => {
+        tr._original[td.dataset.field] = td.textContent;
+
+        const input = document.createElement('input');
+        input.className = 'form-control form-control-sm';
+        input.value = td.textContent;
+
+        td.innerHTML = '';
+        td.appendChild(input);
+      });
+    } else {
+      tr.querySelectorAll('td[data-field]').forEach(td => {
+        const f = td.dataset.field;
+        td.textContent = tr._original?.[f] ?? td.textContent;
+      });
+      tr._original = null;
+    }
+  }
+
+  async function saveRow(tr) {
+    const rowKey = tr.dataset.rowKey;
+    const payload = {};
+    tr.querySelectorAll('td[data-field]').forEach(td => {
+      payload[td.dataset.field] = td.querySelector('input')?.value?.trim() ?? '';
+    });
+
+    let res;
+    if (rowKey) {
+      // Update existing record
+      res = await fetch('/asistencia/' + encodeURIComponent(rowKey), {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrf },
+        body: JSON.stringify(payload)
+      });
+    } else {
+      // Insert new record
+      res = await fetch('/asistencia', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrf },
+        body: JSON.stringify(payload)
+      });
+    }
+
+    const json = await res.json();
+    if (!res.ok || !json.affected) {
+      alert(json.error ?? 'No se pudo guardar (fila no encontrada o cambió).');
+      return;
+    }
+
+    tr.querySelectorAll('td[data-field]').forEach(td => {
+      td.textContent = payload[td.dataset.field] ?? '';
+    });
+
+    // salir de edición
+    const btnEdit = tr.querySelector('[data-act="edit"]');
+    const btnSave = tr.querySelector('[data-act="save"]');
+    const btnCancel = tr.querySelector('[data-act="cancel"]');
+    
+    if (btnEdit) btnEdit.classList.remove('d-none');
+    if (btnSave) btnSave.classList.add('d-none');
+    if (btnCancel) btnCancel.classList.add('d-none');
+    tr._original = null;
+    
+    // Reload to get the new rowKey
+    load();
+  }
+
+  async function deleteRow(tr) {
+    if (!confirm('¿Eliminar este registro?')) return;
+
+    const rowKey = tr.dataset.rowKey;
+
+    const res = await fetch('/asistencia/' + encodeURIComponent(rowKey), {
+      method: 'DELETE',
+      headers: { 'X-CSRF-TOKEN': csrf }
+    });
+
+    const json = await res.json();
+    if (!res.ok || !json.affected) {
+      alert(json.error ?? 'No se pudo eliminar (fila no encontrada o cambió).');
+      return;
+    }
+
+    tr.remove();
+  }
+
+  document.getElementById('tbody').addEventListener('click', async (e) => {
+    const btn = e.target.closest('button[data-act]');
+    if (!btn) return;
+
+    const tr = btn.closest('tr');
+    const act = btn.dataset.act;
+
+    if (act === 'edit') setEditing(tr, true);
+    if (act === 'cancel') setEditing(tr, false);
+    if (act === 'save') await saveRow(tr);
+    if (act === 'del') await deleteRow(tr);
+  });
+
+  document.getElementById('btnAgregar').addEventListener('click', () => {
+    const tbody = document.getElementById('tbody');
+    const tr = document.createElement('tr');
+    
+    const cols = [
+      ['id', ''],
+      ['authDateTime', ''],
+      ['authDate', ''],
+      ['authTime', ''],
+      ['direction', ''],
+      ['deviceName', ''],
+      ['deviceSerial', ''],
+      ['PersonName', ''],
+      ['cardN', ''],
+    ];
+
+    cols.forEach(([k,v]) => {
+      const td = document.createElement('td');
+      td.dataset.field = k;
+      const input = document.createElement('input');
+      input.className = 'form-control form-control-sm';
+      input.value = v;
+      td.appendChild(input);
+      tr.appendChild(td);
+    });
+
+    const tdAcc = document.createElement('td');
+    tdAcc.innerHTML = `
+      <button class="btn btn-sm btn-success me-1" data-act="save">Guardar</button>
+      <button class="btn btn-sm btn-outline-secondary me-1" data-act="cancel">Cancelar</button>
+    `;
+    tr.appendChild(tdAcc);
+
+    tbody.insertBefore(tr, tbody.firstChild);
+    setEditing(tr, true);
+  });
+
+  document.getElementById('btnExportar').addEventListener('click', () => {
+    const params = buildParams();
+    const url = '/asistencia/export?' + params.toString();
+    
+    // Create a temporary link to download the file
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'asistencia_export.csv';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  });
+
+  document.getElementById('btnBuscar').addEventListener('click', () => { page = 1; load(); });
+  document.getElementById('btnLimpiar').addEventListener('click', () => {
+    ['id','direction','deviceName','deviceSerial','PersonName','cardN','authDateFrom','authDateTo']
+      .forEach(x => document.getElementById(x).value = '');
+    page = 1;
+    load();
+  });
+
+  document.getElementById('prev').addEventListener('click', () => { if (page > 1) { page--; load(); } });
+  document.getElementById('next').addEventListener('click', () => { page++; load(); });
+
+  load();
+})();
+</script>
+{% endblock %}
