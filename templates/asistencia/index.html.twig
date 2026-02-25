@@ -142,6 +142,51 @@
   .btn-sm:hover {
     transform: translateY(-1px);
   }
+  .btn-primary {
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+    border: none;
+    transition: all 0.3s ease;
+  }
+  .btn-primary:hover {
+    background: linear-gradient(135deg, #5558e3 0%, #7c3aed 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+  }
+  .btn-success {
+    background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+    border: none;
+    transition: all 0.3s ease;
+  }
+  .btn-success:hover {
+    background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+  }
+  .btn-warning {
+    background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%);
+    border: none;
+    transition: all 0.3s ease;
+  }
+  .btn-warning:hover {
+    background: linear-gradient(135deg, #d97706 0%, #f59e0b 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+  }
+  .btn-danger {
+    background: linear-gradient(135deg, #ef4444 0%, #f87171 100%);
+    border: none;
+    transition: all 0.3s ease;
+  }
+  .btn-danger:hover {
+    background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+  }
+  .btn-sm {
+    border-radius: 6px;
+    font-weight: 500;
+    padding: 0.375rem 0.75rem;
+  }
 </style>
 {% endblock %}
 
@@ -411,7 +456,7 @@
         if (k === 'direction') {
           const badge = document.createElement('span');
           badge.className = `direction-badge direction-${v}`;
-          badge.textContent = v === 'IN' ? 'Entrada' : 'Salida';
+          badge.textContent = v || '';
           td.appendChild(badge);
         } else {
           td.textContent = v;
@@ -422,17 +467,17 @@
 
       const tdAcc = document.createElement('td');
       tdAcc.innerHTML = `
-        <button class="btn btn-sm btn-outline-primary me-1" data-act="edit" title="Editar">
-          <i class="fas fa-edit"></i>
+        <button class="btn btn-sm btn-primary me-1" data-act="edit" title="Editar">
+          <i class="fas fa-pen-to-square"></i>
         </button>
         <button class="btn btn-sm btn-success me-1 d-none" data-act="save" title="Guardar">
-          <i class="fas fa-check"></i>
+          <i class="fas fa-circle-check"></i>
         </button>
-        <button class="btn btn-sm btn-outline-secondary me-1 d-none" data-act="cancel" title="Cancelar">
-          <i class="fas fa-times"></i>
+        <button class="btn btn-sm btn-warning me-1 d-none" data-act="cancel" title="Cancelar">
+          <i class="fas fa-xmark"></i>
         </button>
-        <button class="btn btn-sm btn-outline-danger" data-act="del" title="Eliminar">
-          <i class="fas fa-trash"></i>
+        <button class="btn btn-sm btn-danger" data-act="del" title="Eliminar">
+          <i class="fas fa-trash-can"></i>
         </button>
       `;
       tr.appendChild(tdAcc);
@@ -584,8 +629,12 @@
 
     const tdAcc = document.createElement('td');
     tdAcc.innerHTML = `
-      <button class="btn btn-sm btn-success me-1" data-act="save">Guardar</button>
-      <button class="btn btn-sm btn-outline-secondary me-1" data-act="cancel">Cancelar</button>
+      <button class="btn btn-sm btn-success me-1" data-act="save" title="Guardar">
+        <i class="fas fa-circle-check"></i>
+      </button>
+      <button class="btn btn-sm btn-warning me-1" data-act="cancel" title="Cancelar">
+        <i class="fas fa-xmark"></i>
+      </button>
     `;
     tr.appendChild(tdAcc);
 

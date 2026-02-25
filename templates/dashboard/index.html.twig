@@ -1,0 +1,277 @@
+{% extends 'base.html.twig' %}
+{% block title %}Dashboard{% endblock %}
+
+{% block stylesheets %}
+<style>
+  .dashboard-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 4rem 0;
+    margin-bottom: 3rem;
+    border-radius: 20px;
+    text-align: center;
+  }
+  .dashboard-header h1 {
+    font-size: 3rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    text-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  }
+  .dashboard-header p {
+    font-size: 1.2rem;
+    opacity: 0.9;
+    margin-bottom: 0;
+  }
+  .features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    margin-bottom: 3rem;
+  }
+  .feature-card {
+    background: white;
+    border-radius: 15px;
+    padding: 2rem;
+    text-align: center;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+  }
+  .feature-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+    border-color: #667eea;
+  }
+  .feature-icon {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 1.5rem;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    color: white;
+  }
+  .feature-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 1rem;
+  }
+  .feature-description {
+    color: #666;
+    line-height: 1.6;
+    margin-bottom: 2rem;
+  }
+  .btn-dashboard {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    padding: 1rem 2rem;
+    border-radius: 10px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    text-decoration: none;
+    display: inline-block;
+    transition: all 0.3s ease;
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+  }
+  .btn-dashboard:hover {
+    background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+    color: white;
+    text-decoration: none;
+  }
+  .stats-section {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 15px;
+    padding: 2rem;
+    margin-bottom: 3rem;
+  }
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+  }
+  .stat-item {
+    text-align: center;
+    padding: 1.5rem;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+  }
+  .stat-number {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #667eea;
+    margin-bottom: 0.5rem;
+  }
+  .stat-label {
+    color: #666;
+    font-weight: 500;
+  }
+  .actividad-table {
+    background: white;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+  .actividad-table th {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    font-weight: 600;
+    color: #495057;
+    border: none;
+    padding: 0.75rem;
+  }
+  .actividad-table td {
+    padding: 0.75rem;
+    border-bottom: 1px solid #f1f3f4;
+  }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="container py-4">
+  <div class="dashboard-header">
+    <div class="container">
+      <h1>
+        <i class="fas fa-tachometer-alt me-3"></i>Dashboard
+      </h1>
+      <p class="mb-0">Sistema de Gestión Biométrica</p>
+    </div>
+  </div>
+
+  <div class="stats-section">
+    <h3 class="text-center mb-4">
+      <i class="fas fa-chart-line me-2"></i>Estadísticas del Sistema
+    </h3>
+    <div class="stats-grid">
+      <div class="stat-item">
+        <div class="stat-number" id="total-usuarios">
+          <i class="fas fa-users me-2"></i>Cargando...
+        </div>
+        <div class="stat-label">Usuarios Totales</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-number" id="personas-hoy">
+          <i class="fas fa-user-check me-2"></i>Cargando...
+        </div>
+        <div class="stat-label">Personas Hoy</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-number" id="registros-hoy">
+          <i class="fas fa-fingerprint me-2"></i>Cargando...
+        </div>
+        <div class="stat-label">Registros Hoy</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-number" id="total-dispositivos">
+          <i class="fas fa-desktop me-2"></i>Cargando...
+        </div>
+        <div class="stat-label">Dispositivos</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="features-grid">
+    <div class="feature-card">
+      <div class="feature-icon">
+        <i class="fas fa-user-clock"></i>
+      </div>
+      <h3 class="feature-title">Asistencia</h3>
+      <p class="feature-description">
+        Gestiona los registros de entrada y salida del personal. 
+        Permite consultar, agregar, editar y eliminar registros biométricos.
+      </p>
+      <a href="/asistencia" class="btn-dashboard">
+        <i class="fas fa-arrow-right me-2"></i>Abrir Sistema
+      </a>
+    </div>
+
+    <div class="feature-card">
+      <div class="feature-icon">
+        <i class="fas fa-chart-bar"></i>
+      </div>
+      <h3 class="feature-title">Actividad Reciente</h3>
+      <p class="feature-description">
+        Últimos 7 días de actividad con cantidad de personas 
+        que marcaron asistencia diariamente.
+      </p>
+      <div id="actividad-reciente" class="mt-3">
+        <div class="text-center">
+          <i class="fas fa-spinner fa-spin"></i> Cargando datos...
+        </div>
+      </div>
+    </div>
+
+    <div class="feature-card">
+      <div class="feature-icon">
+        <i class="fas fa-file-export"></i>
+      </div>
+      <h3 class="feature-title">Exportación</h3>
+      <p class="feature-description">
+        Exporta los datos de asistencia a formato Excel con filtros 
+        personalizados por fechas y legajos.
+      </p>
+      <a href="/asistencia" class="btn-dashboard">
+        <i class="fas fa-arrow-right me-2"></i>Exportar Datos
+      </a>
+    </div>
+  </div>
+</div>
+
+<script>
+(() => {
+  // Cargar estadísticas reales
+  fetch('/dashboard/stats')
+    .then(response => response.json())
+    .then(stats => {
+      // Actualizar estadísticas principales
+      document.getElementById('total-usuarios').innerHTML = 
+        `<i class="fas fa-users me-2"></i>${stats.total_usuarios.toLocaleString()}`;
+      document.getElementById('personas-hoy').innerHTML = 
+        `<i class="fas fa-user-check me-2"></i>${stats.personas_hoy.toLocaleString()}`;
+      document.getElementById('registros-hoy').innerHTML = 
+        `<i class="fas fa-fingerprint me-2"></i>${stats.registros_hoy.toLocaleString()}`;
+      document.getElementById('total-dispositivos').innerHTML = 
+        `<i class="fas fa-desktop me-2"></i>${stats.total_dispositivos.toLocaleString()}`;
+
+      // Mostrar actividad reciente
+      const actividadDiv = document.getElementById('actividad-reciente');
+      if (stats.ultimos_7_dias && stats.ultimos_7_dias.length > 0) {
+        let html = '<div class="table-responsive"><table class="table table-sm actividad-table"><thead><tr><th>Fecha</th><th>Personas</th><th>Dirección</th></tr></thead><tbody>';
+        
+        stats.ultimos_7_dias.forEach(dia => {
+          const fecha = new Date(dia.fecha).toLocaleDateString('es-ES', { 
+            day: '2-digit', 
+            month: '2-digit', 
+            year: 'numeric' 
+          });
+          html += `<tr><td>${fecha}</td><td><strong>${dia.personas}</strong> personas</td><td>${dia.direction || 'IN'}</td></tr>`;
+        });
+        
+        html += '</tbody></table></div>';
+        actividadDiv.innerHTML = html;
+      } else {
+        actividadDiv.innerHTML = '<div class="text-center text-muted">No hay datos recientes</div>';
+      }
+    })
+    .catch(error => {
+      console.error('Error cargando estadísticas:', error);
+      document.getElementById('total-usuarios').innerHTML = 
+        '<i class="fas fa-exclamation-triangle me-2"></i>Error';
+      document.getElementById('personas-hoy').innerHTML = 
+        '<i class="fas fa-exclamation-triangle me-2"></i>Error';
+      document.getElementById('registros-hoy').innerHTML = 
+        '<i class="fas fa-exclamation-triangle me-2"></i>Error';
+      document.getElementById('total-dispositivos').innerHTML = 
+        '<i class="fas fa-exclamation-triangle me-2"></i>Error';
+      document.getElementById('actividad-reciente').innerHTML = 
+        '<div class="text-center text-danger">Error al cargar datos</div>';
+    });
+})();
+</script>
+{% endblock %}

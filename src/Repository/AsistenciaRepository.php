@@ -117,6 +117,65 @@ class AsistenciaRepository
         ];
     }
 
+    public function getDashboardStats(): array
+    {
+        // Total de usuarios únicos (legajos)
+        $sql = "SELECT COUNT(DISTINCT id) as total_usuarios FROM dbo.asistencia";
+        $stmt = \odbc_prepare($this->conn, $sql);
+        \odbc_execute($stmt);
+        $row = \odbc_fetch_array($stmt);
+        $totalUsuarios = $row['total_usuarios'] ?? 0;
+
+        // Registros de hoy
+        $sql = "SELECT COUNT(*) as registros_hoy FROM dbo.asistencia WHERE authDate = CONVERT(date, GETDATE())";
+        $stmt = \odbc_prepare($this->conn, $sql);
+        \odbc_execute($stmt);
+        $row = \odbc_fetch_array($stmt);
+        $registrosHoy = $row['registros_hoy'] ?? 0;
+
+        // Total de dispositivos únicos
+        $sql = "SELECT COUNT(DISTINCT deviceSerial) as total_dispositivos FROM dbo.asistencia WHERE deviceSerial IS NOT NULL AND deviceSerial != ''";
+        $stmt = \odbc_prepare($this->conn, $sql);
+        \odbc_execute($stmt);
+        $row = \odbc_fetch_array($stmt);
+        $totalDispositivos = $row['total_dispositivos'] ?? 0;
+
+        // Personas que marcaron hoy (agrupado por legajo)
+        $sql = "SELECT COUNT(DISTINCT id) as personas_hoy FROM dbo.asistencia WHERE authDate = CONVERT(date, GETDATE())";
+        $stmt = \odbc_prepare($this->conn, $sql);
+        \odbc_execute($stmt);
+        $row = \odbc_fetch_array($stmt);
+        $personasHoy = $row['personas_hoy'] ?? 0;
+
+        // Últimos 7 días - personas por día con dirección
+        $sql = "
+            SELECT authDate, COUNT(DISTINCT id) as personas_dia, 
+                   MAX(CASE WHEN direction IS NOT NULL THEN direction ELSE 'IN' END) as direction
+            FROM dbo.asistencia 
+            WHERE authDate >= DATEADD(day, -7, CONVERT(date, GETDATE()))
+            GROUP BY authDate 
+            ORDER BY authDate DESC
+        ";
+        $stmt = \odbc_prepare($this->conn, $sql);
+        \odbc_execute($stmt);
+        $ultimos7Dias = [];
+        while ($row = \odbc_fetch_array($stmt)) {
+            $ultimos7Dias[] = [
+                'fecha' => $row['authDate'],
+                'personas' => $row['personas_dia'],
+                'direction' => $row['direction'] ?? 'IN'
+            ];
+        }
+
+        return [
+            'total_usuarios' => $totalUsuarios,
+            'registros_hoy' => $registrosHoy,
+            'personas_hoy' => $personasHoy,
+            'total_dispositivos' => $totalDispositivos,
+            'ultimos_7_dias' => $ultimos7Dias
+        ];
+    }
+
     public function exportData(array $f): array
     {
         // Build WHERE conditions
