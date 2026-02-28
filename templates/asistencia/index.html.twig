@@ -142,51 +142,6 @@
   .btn-sm:hover {
     transform: translateY(-1px);
   }
-  .btn-primary {
-    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
-    border: none;
-    transition: all 0.3s ease;
-  }
-  .btn-primary:hover {
-    background: linear-gradient(135deg, #5558e3 0%, #7c3aed 100%);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
-  }
-  .btn-success {
-    background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
-    border: none;
-    transition: all 0.3s ease;
-  }
-  .btn-success:hover {
-    background: linear-gradient(135deg, #059669 0%, #10b981 100%);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
-  }
-  .btn-warning {
-    background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%);
-    border: none;
-    transition: all 0.3s ease;
-  }
-  .btn-warning:hover {
-    background: linear-gradient(135deg, #d97706 0%, #f59e0b 100%);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
-  }
-  .btn-danger {
-    background: linear-gradient(135deg, #ef4444 0%, #f87171 100%);
-    border: none;
-    transition: all 0.3s ease;
-  }
-  .btn-danger:hover {
-    background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
-  }
-  .btn-sm {
-    border-radius: 6px;
-    font-weight: 500;
-    padding: 0.375rem 0.75rem;
-  }
 </style>
 {% endblock %}
 
@@ -279,64 +234,7 @@
             <button class="btn btn-outline-secondary" id="btnLimpiar">
               <i class="fas fa-eraser me-2"></i>Limpiar
             </button>
-            <button class="btn btn-info" id="btnExportar">
-              <i class="fas fa-download me-2"></i>Exportar Excel
-            </button>
           </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Export Modal -->
-  <div class="modal fade" id="exportModal" tabindex="-1" aria-labelledby="exportModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="exportModalLabel">
-            <i class="fas fa-download me-2"></i>Exportar a Excel
-          </h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <div class="modal-body">
-          <form id="exportForm">
-            <div class="mb-3">
-              <label for="exportDateFrom" class="form-label fw-bold">Fecha Desde</label>
-              <div class="input-group">
-                <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
-                <input type="date" class="form-control" id="exportDateFrom">
-              </div>
-            </div>
-            <div class="mb-3">
-              <label for="exportDateTo" class="form-label fw-bold">Fecha Hasta</label>
-              <div class="input-group">
-                <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
-                <input type="date" class="form-control" id="exportDateTo">
-              </div>
-            </div>
-            <div class="mb-3">
-              <label for="exportLegajoType" class="form-label fw-bold">Tipo de Legajo</label>
-              <select class="form-select" id="exportLegajoType">
-                <option value="all">Todos los legajos</option>
-                <option value="specific">Legajo específico</option>
-              </select>
-            </div>
-            <div class="mb-3" id="specificLegajoGroup" style="display: none;">
-              <label for="exportLegajo" class="form-label fw-bold">Legajo Específico</label>
-              <div class="input-group">
-                <span class="input-group-text"><i class="fas fa-hashtag"></i></span>
-                <input type="text" class="form-control" id="exportLegajo" placeholder="Ingrese número de legajo">
-              </div>
-            </div>
-          </form>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-            <i class="fas fa-times me-2"></i>Cancelar
-          </button>
-          <button type="button" class="btn btn-info" id="btnConfirmExport">
-            <i class="fas fa-download me-2"></i>Exportar
-          </button>
         </div>
       </div>
     </div>
@@ -486,9 +384,12 @@
     });
 
     document.getElementById('info').textContent =
-      `Página ${json.page} · ${json.data.length} registros`;
+      `Página ${json.page} de ${json.pages} · ${json.data.length} registros`;
     document.getElementById('recordCount').textContent =
-      `Mostrando ${json.data.length} registros` + (json.data.length > 0 ? ` de la página ${json.page}` : '');
+      `Mostrando ${json.data.length} registros de ${json.total} totales`;
+    
+    document.getElementById('prev').disabled = page <= 1;
+    document.getElementById('next').disabled = page >= (json.pages || 1);
   }
 
   function setEditing(tr, editing) {
@@ -642,46 +543,7 @@
     setEditing(tr, true);
   });
 
-  // Modal functionality
-  const exportModal = new bootstrap.Modal(document.getElementById('exportModal'));
   
-  document.getElementById('btnExportar').addEventListener('click', () => {
-    // Pre-fill dates from current search
-    document.getElementById('exportDateFrom').value = document.getElementById('authDateFrom').value;
-    document.getElementById('exportDateTo').value = document.getElementById('authDateTo').value;
-    exportModal.show();
-  });
-
-  document.getElementById('exportLegajoType').addEventListener('change', (e) => {
-    const specificGroup = document.getElementById('specificLegajoGroup');
-    specificGroup.style.display = e.target.value === 'specific' ? 'block' : 'none';
-  });
-
-  document.getElementById('btnConfirmExport').addEventListener('click', () => {
-    const dateFrom = document.getElementById('exportDateFrom').value;
-    const dateTo = document.getElementById('exportDateTo').value;
-    const legajoType = document.getElementById('exportLegajoType').value;
-    const legajo = document.getElementById('exportLegajo').value;
-    
-    // Build export parameters
-    const params = new URLSearchParams();
-    if (dateFrom) params.append('authDateFrom', dateFrom);
-    if (dateTo) params.append('authDateTo', dateTo);
-    if (legajoType === 'specific' && legajo) params.append('id', legajo);
-    
-    const url = '/asistencia/export?' + params.toString();
-    
-    // Create a temporary link to download the file
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = 'asistencia_export.csv';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    
-    exportModal.hide();
-  });
-
   document.getElementById('btnBuscar').addEventListener('click', () => { page = 1; load(); });
   document.getElementById('btnLimpiar').addEventListener('click', () => {
     ['id','direction','deviceName','deviceSerial','PersonName','cardN','authDateFrom','authDateTo']

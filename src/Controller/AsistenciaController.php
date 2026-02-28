@@ -6,6 +6,7 @@ use App\Repository\AsistenciaRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
 class AsistenciaController extends AbstractController
@@ -13,7 +14,7 @@ class AsistenciaController extends AbstractController
     /**
      * @Route("/asistencia", name="asistencia_index", methods={"GET"})
      */
-    public function index(): \Symfony\Component\HttpFoundation\Response
+    public function index(): Response
     {
         return $this->render('asistencia/index.html.twig');
     }
@@ -26,46 +27,7 @@ class AsistenciaController extends AbstractController
         return $this->json($repo->search($request->query->all()));
     }
 
-    /**
-     * @Route("/asistencia/export", name="asistencia_export", methods={"GET"})
-     */
-    public function export(Request $request, AsistenciaRepository $repo): \Symfony\Component\HttpFoundation\Response
-    {
-        $filters = $request->query->all();
-        $data = $repo->exportData($filters);
-        
-        // Generate filename with date range
-        $from = $filters['authDateFrom'] ?? 'todos';
-        $to = $filters['authDateTo'] ?? 'todos';
-        $filename = "asistencia_{$from}_a_{$to}.csv";
-        
-        // Create CSV content with header info
-        $csv = "REPORTE DE ASISTENCIA\n";
-        $csv .= "Desde: " . ($filters['authDateFrom'] ?? 'Todas las fechas') . "\n";
-        $csv .= "Hasta: " . ($filters['authDateTo'] ?? 'Todas las fechas') . "\n";
-        $csv .= "Generado: " . date('d/m/Y H:i:s') . "\n";
-        $csv .= "Nota: Solo se registran horas de entrada (IN)\n\n";
-        $csv .= "Legajo,Nombre y Apellido,Fecha,Hora Entrada,Hora Salida,Promedio Tiempo\n";
-        
-        foreach ($data as $row) {
-            $csv .= sprintf(
-                "%s,%s,%s,%s,%s,%s\n",
-                $row['id'] ?? '',
-                $row['PersonName'] ?? '',
-                $row['authDate'] ?? '',
-                $row['entrada'] ?? '',
-                $row['salida'] ?? '',
-                $row['promedio_tiempo'] ?? ''
-            );
-        }
-        
-        $response = new \Symfony\Component\HttpFoundation\Response($csv);
-        $response->headers->set('Content-Type', 'text/csv; charset=utf-8');
-        $response->headers->set('Content-Disposition', 'attachment; filename="' . $filename . '"');
-        
-        return $response;
-    }
-
+    
     /**
      * @Route("/asistencia", name="asistencia_create", methods={"POST"})
      */

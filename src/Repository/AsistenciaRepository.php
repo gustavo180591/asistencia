@@ -58,14 +58,6 @@ class AsistenciaRepository
             $conditions[] = "cardN LIKE ?";
             $params[] = '%' . $f['cardN'] . '%';
         }
-        if (!empty($f['authDateTimeFrom'])) {
-            $conditions[] = "authDateTime >= ?";
-            $params[] = $f['authDateTimeFrom'];
-        }
-        if (!empty($f['authDateTimeTo'])) {
-            $conditions[] = "authDateTime <= ?";
-            $params[] = $f['authDateTimeTo'];
-        }
         if (!empty($f['authDateFrom'])) {
             $conditions[] = "authDate >= ?";
             $params[] = $f['authDateFrom'];
@@ -74,17 +66,17 @@ class AsistenciaRepository
             $conditions[] = "authDate <= ?";
             $params[] = $f['authDateTo'];
         }
-        if (!empty($f['authTimeFrom'])) {
-            $conditions[] = "authTime >= ?";
-            $params[] = $f['authTimeFrom'];
-        }
-        if (!empty($f['authTimeTo'])) {
-            $conditions[] = "authTime <= ?";
-            $params[] = $f['authTimeTo'];
-        }
 
         $whereClause = implode(' AND ', $conditions);
         
+        // Get total count
+        $countSql = "SELECT COUNT(*) as total FROM dbo.asistencia WHERE {$whereClause}";
+        $stmt = \odbc_prepare($this->conn, $countSql);
+        \odbc_execute($stmt, $params);
+        $countRow = \odbc_fetch_array($stmt);
+        $total = $countRow['total'];
+        
+        // Get paginated data
         $sql = "
             SELECT
               CONVERT(varchar(100), %%physloc%%) AS rowKey,
@@ -113,178 +105,10 @@ class AsistenciaRepository
         return [
             'page' => $page,
             'pageSize' => $pageSize,
+            'total' => $total,
+            'pages' => ceil($total / $pageSize),
             'data' => $rows,
         ];
-    }
-
-    public function getDashboardStats(): array
-    {
-        // Total de usuarios únicos (legajos)
-        $sql = "SELECT COUNT(DISTINCT id) as total_usuarios FROM dbo.asistencia";
-        $stmt = \odbc_prepare($this->conn, $sql);
-        \odbc_execute($stmt);
-        $row = \odbc_fetch_array($stmt);
-        $totalUsuarios = $row['total_usuarios'] ?? 0;
-
-        // Registros de hoy
-        $sql = "SELECT COUNT(*) as registros_hoy FROM dbo.asistencia WHERE authDate = CONVERT(date, GETDATE())";
-        $stmt = \odbc_prepare($this->conn, $sql);
-        \odbc_execute($stmt);
-        $row = \odbc_fetch_array($stmt);
-        $registrosHoy = $row['registros_hoy'] ?? 0;
-
-        // Total de dispositivos únicos
-        $sql = "SELECT COUNT(DISTINCT deviceSerial) as total_dispositivos FROM dbo.asistencia WHERE deviceSerial IS NOT NULL AND deviceSerial != ''";
-        $stmt = \odbc_prepare($this->conn, $sql);
-        \odbc_execute($stmt);
-        $row = \odbc_fetch_array($stmt);
-        $totalDispositivos = $row['total_dispositivos'] ?? 0;
-
-        // Personas que marcaron hoy (agrupado por legajo)
-        $sql = "SELECT COUNT(DISTINCT id) as personas_hoy FROM dbo.asistencia WHERE authDate = CONVERT(date, GETDATE())";
-        $stmt = \odbc_prepare($this->conn, $sql);
-        \odbc_execute($stmt);
-        $row = \odbc_fetch_array($stmt);
-        $personasHoy = $row['personas_hoy'] ?? 0;
-
-        // Últimos 7 días - personas por día con dirección
-        $sql = "
-            SELECT authDate, COUNT(DISTINCT id) as personas_dia, 
-                   MAX(CASE WHEN direction IS NOT NULL THEN direction ELSE 'IN' END) as direction
-            FROM dbo.asistencia 
-            WHERE authDate >= DATEADD(day, -7, CONVERT(date, GETDATE()))
-            GROUP BY authDate 
-            ORDER BY authDate DESC
-        ";
-        $stmt = \odbc_prepare($this->conn, $sql);
-        \odbc_execute($stmt);
-        $ultimos7Dias = [];
-        while ($row = \odbc_fetch_array($stmt)) {
-            $ultimos7Dias[] = [
-                'fecha' => $row['authDate'],
-                'personas' => $row['personas_dia'],
-                'direction' => $row['direction'] ?? 'IN'
-            ];
-        }
-
-        return [
-            'total_usuarios' => $totalUsuarios,
-            'registros_hoy' => $registrosHoy,
-            'personas_hoy' => $personasHoy,
-            'total_dispositivos' => $totalDispositivos,
-            'ultimos_7_dias' => $ultimos7Dias
-        ];
-    }
-
-    public function exportData(array $f): array
-    {
-        // Build WHERE conditions
-        $conditions = ["1=1"];
-        $params = [];
-        
-        if (!empty($f['authDateFrom'])) {
-            $conditions[] = "authDate >= ?";
-            $params[] = $f['authDateFrom'];
-        }
-        if (!empty($f['authDateTo'])) {
-            $conditions[] = "authDate <= ?";
-            $params[] = $f['authDateTo'];
-        }
-        if (!empty($f['PersonName'])) {
-            $conditions[] = "PersonName LIKE ?";
-            $params[] = '%' . $f['PersonName'] . '%';
-        }
-        if (!empty($f['id'])) {
-            $conditions[] = "id LIKE ?";
-            $params[] = '%' . $f['id'] . '%';
-        }
-
-        $whereClause = implode(' AND ', $conditions);
-        
-        // Get all data for the date range
-        $sql = "
-            SELECT 
-                id, 
-                PersonName, 
-                authDate, 
-                authTime, 
-                direction,
-                authDateTime
-            FROM dbo.asistencia
-            WHERE {$whereClause}
-            ORDER BY id, authDate, authTime
-        ";
-
-        $stmt = \odbc_prepare($this->conn, $sql);
-        if (!$stmt) {
-            throw new \Exception("Prepare failed: " . \odbc_errormsg($this->conn));
-        }
-
-        $result = \odbc_execute($stmt, $params);
-        if (!$result) {
-            throw new \Exception("Execute failed: " . \odbc_errormsg($this->conn));
-        }
-
-        $rows = [];
-        while ($row = \odbc_fetch_array($stmt)) {
-            $rows[] = $row;
-        }
-
-        // Group by person and date to calculate entry/exit times
-        $grouped = [];
-        foreach ($rows as $row) {
-            $key = $row['id'] . '|' . $row['PersonName'] . '|' . $row['authDate'];
-            if (!isset($grouped[$key])) {
-                $grouped[$key] = [
-                    'id' => $row['id'],
-                    'PersonName' => $row['PersonName'],
-                    'authDate' => $row['authDate'],
-                    'entradas' => [],
-                    'salidas' => []
-                ];
-            }
-            
-            if ($row['direction'] === 'IN') {
-                $grouped[$key]['entradas'][] = $row['authTime'];
-            } elseif ($row['direction'] === 'OUT') {
-                $grouped[$key]['salidas'][] = $row['authTime'];
-            }
-        }
-
-        // Calculate entry, exit, and average times
-        $exportData = [];
-        foreach ($grouped as $group) {
-            $entradas = $group['entradas'];
-            $salidas = $group['salidas'];
-            
-            // Get first entry time (solo hay entradas IN)
-            $primeraEntrada = !empty($entradas) ? min($entradas) : '';
-            
-            // Como todos son IN, no hay salidas OUT para calcular promedio
-            $ultimaSalida = ''; // No hay salidas
-            $promedio = ''; // No se puede calcular sin OUT
-            
-            // Clean time format (remove microseconds)
-            $primeraEntrada = $primeraEntrada ? substr($primeraEntrada, 0, 8) : '';
-            
-            $exportData[] = [
-                'id' => $group['id'],
-                'PersonName' => $group['PersonName'],
-                'authDate' => $group['authDate'],
-                'entrada' => $primeraEntrada,
-                'salida' => $ultimaSalida,
-                'promedio_tiempo' => $promedio
-            ];
-        }
-
-        // Sort by date and then by name
-        usort($exportData, function($a, $b) {
-            $dateCompare = strcmp($a['authDate'], $b['authDate']);
-            if ($dateCompare !== 0) return $dateCompare;
-            return strcmp($a['PersonName'], $b['PersonName']);
-        });
-
-        return $exportData;
     }
 
     public function create(array $p): int
